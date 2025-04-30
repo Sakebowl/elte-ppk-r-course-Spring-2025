@@ -32,7 +32,7 @@ Note: There are several different ways to solve these tasks, feel free to come u
 Read the cocktail dataset from: <https://github.com/nthun/cocktail-balance> You can also find the codebook there.
 
 ```{r}
-
+cocktails <- read_tsv("https://raw.githubusercontent.com/nthun/cocktail-balance/refs/heads/master/cocktail_data.tsv")
 ```
 
 ## 2. Transform the data table and clean the ingredient variable!
@@ -40,7 +40,26 @@ Read the cocktail dataset from: <https://github.com/nthun/cocktail-balance> You 
 The ingredients are currently in a single cell for each cocktail. It would be better to put them in separate rows. Also, the variable should be cleaned of all quantities (e.g. 1/2 oz, 2 dashes, etc.), and the indicator of alcohol content (e.g. 47.3% abv). You will need to use this cleaned table in later tasks.
 
 ```{r}
+# There were certain strings left in the cocktails_clean\$ingredients that I did not want so I removed or changed them one-by-one, such as "cr\u008fme", "luxardo marschino" = "luxardo maraschino"...(last few lines). To be fully transparent, I did have to use DeepSeek AI to help me with specific problems as I could not do everything based only on the documentation.
 
+
+cocktails_clean <- cocktails %>%
+  mutate(ingredients = str_replace_all(ingredients, "\\s+or\\s+", "<SPLIT>")) %>%
+  separate_rows(ingredients, sep = "<br/>|<br>|<b4/>|<SPLIT>") %>%
+  mutate(ingredients = str_remove_all(ingredients, "\\b([0-9]+\\s)?[0-9]*\\.?[0-9]+\\s?(oz|cl|ml|tsp|tbsp|dashes?|drops?|dash|parts?|cups?|pints?|liters?|bsp)\\b"),
+         ingredients = str_remove_all(ingredients, "\\b[0-9]+\\s[0-9]+/[0-9]+\\b|\\b[0-9]+/[0-9]+\\b|\\b[0-9]+\\b|\\s*/\\s*"),
+         ingredients = str_remove_all(ingredients, "\\(.*?\\)"),
+         ingredients = str_replace_all(ingredients, "\\s+", " "),
+         ingredients = str_squish(ingredients),
+         ingredients = str_replace_all(ingredients, "\\s+-", "-"),
+         ingredients = str_trim(ingredients),
+         ingredients = str_to_lower(ingredients),
+         ingredients = str_replace_all(ingredients, "cr\u008fme", "creme"),
+         ingredients = str_replace_all(ingredients, "luxardo marschino", "luxardo maraschino"),
+         ingredients = str_replace_all(ingredients, "sugard", "sugared"),
+         ingredients = str_replace_all(ingredients, "\\bsaline\\b(?!\\s*solution)", "saline solution"),
+         ingredients = str_replace_all(ingredients, "\\bsimple\\b(?!\\s*syrup)", "simple syrup")) %>%
+  filter(ingredients != "")
 ```
 
 ## 3. All ingredients in alphabetical order
@@ -48,7 +67,13 @@ The ingredients are currently in a single cell for each cocktail. It would be be
 Before opening the bar, you need to find a reliable supplier that has all the ingredients. You need to send a list of all possible ingredients you will need. They don't need the quantities (i.e. how many of these are needed), just the names of the ingredients.
 
 ```{r}
+all_ingredients <- cocktails_clean %>%
+  select(ingredients) %>%
+  arrange(ingredients)  
 
+# I guess it is ok to keep it as a single column df, otherwise I would use pull() to have them saved as a vector
+
+all_ingredients
 ```
 
 ## 4. Number of unique ingredients
@@ -56,7 +81,9 @@ Before opening the bar, you need to find a reliable supplier that has all the in
 How many different ingredients you will need?
 
 ```{r}
-
+all_ingredients %>% 
+  summarise(num = n_distinct(ingredients)) %>%
+  pull(num)
 ```
 
 ## 5. What are the top 10 ingredients?
@@ -64,7 +91,13 @@ How many different ingredients you will need?
 What are the 10 most frequently used ingredients? If there are ties, you can list more than 10.
 
 ```{r}
+# Logic: every time a specific ingredient appears in a df, it means that it appears in a cocktail. Just count the number of appearances and we get info about "in how many cocktails"
 
+ten_most_freq_ing <- cocktails_clean %>%
+  count(ingredients) %>%
+  slice_max(order_by = n, n = 10, with_ties = TRUE)
+
+ten_most_freq_ing 
 ```
 
 ## 6. Which cocktail(s) has/have the most ingredients?
@@ -72,27 +105,61 @@ What are the 10 most frequently used ingredients? If there are ties, you can lis
 Count the number of ingredients and filter all the cocktails that has that many.
 
 ```{r}
+#Logic: like previously, we will count the number of appearances of cocktails as each row for a specific cocktail represents one ingredient. Count() will return info for all, we apply slice_max() to get the top one.
+cocktails_clean %>%
+  count(name, sort = TRUE) %>%
+  slice_max(order_by = n, n = 1, with_ties = TRUE)
 
+# But let me also do it the other way, if it is necessary to really use filter()
+cocktails_clean %>%
+  count(name, sort = TRUE) %>%
+  filter(n == max(n))
 ```
 
 ## 7. How many ingredients appear in only one cocktail (rare ingredient)?
 
 Count all cocktails with only one ingredient, and
 
-```{r}
+Miha's comment: I think this instruction is not correct as it does not correspond to the question above?
 
+```{r}
+rare_ingredients <- cocktails_clean %>%
+  count(ingredients) %>%
+  filter(n == 1) %>%
+  # I could count the number of them here with nrow(), but I wanted to save them as a vector
+  pull(ingredients) 
+
+rare_ingredients    
+length(rare_ingredients)
+
+#But if I should actually "count all cocktails with one ingredient, and" as the unfinished instruction suggest - similar logic as before but instead of counting ingredients, we count cocktails. 
+only_one_ing_cocktails <- cocktails_clean %>%
+  count(name) %>%
+  filter(n == 1) %>%
+  pull(name)
+
+only_one_ing_cocktails
+length(only_one_ing_cocktails)
+#There are none.
 ```
 
 ## 8. Which cocktail has an ingredient that is only used in one cocktail?
 
 ```{r}
-
+cocktails_with_rare <- cocktails_clean %>%
+  filter(ingredients %in% rare_ingredients) %>%
+  distinct(name)
+cocktails_with_rare
 ```
 
 ## 9. What are the cocktails without rare ingredients?
 
 ```{r}
-  
+# Hah, first I used filter(!ingredients %in% rare_ingredients), but that of course does not provide correct results as we have everything listed in separate rows and thus it only removes the rows with THAT SPECIFIC rare ingredient. So it is much more straightforward to use the names of the cocktails...
+
+cocktails_clean %>%
+  filter(!name %in% cocktails_with_rare$name) %>%
+  distinct(name)
 ```
 
 ## 10. Create a cheat sheet for the bartender!
@@ -108,9 +175,27 @@ tribble(~name, ~Lime, ~`White rum`, ~`Cane sugar`, ~`Coca-cola`, ~Mint, ~Soda,
 ```
 
 ```{r}
+# Logic: we will only need names and ingredients, thus keep only these columns from the clean cocktails data. It is straightforward that we will need to pivot the df to wider - Each cocktail is a row, all the possible ingredients are in columns instead of column "ingredients". Hm ok....but to pivot, I need to extract "values" from somewhere. I looked online just to see a visual example of pivot_wider() and it clicked, just use "X" as values, so "X"s are then used as value. Full transparency - I then used stackoverflow to figure out how to really polish it and get rid of NAs in the final df.
 
+cheat_sheet <- cocktails_clean %>%
+  select(name, ingredients) %>%                
+  distinct() %>%                               
+  mutate(value = "X") %>%                      
+  pivot_wider(
+    names_from = ingredients,
+    values_from = value,
+    values_fill = list(value = "")             # found this on SO, to get rid of NAs
+  ) %>%
+  # Used this line from above, to sort ingredients
+  relocate(name, sort(names(.))) %>%
+  # Well, let's sort the cocktails alphabetically as well then
+  arrange(name)
+
+# To make it a matrix, not a tibble
+cheat_matrix <- as.matrix(select(cheat_sheet, -name))
+rownames(cheat_matrix) <- cheat_sheet$name
+cheat_matrix
 ```
-
 
 Congrats, the bar is now officially open!
 
