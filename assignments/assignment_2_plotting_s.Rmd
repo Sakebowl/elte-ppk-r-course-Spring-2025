@@ -20,6 +20,11 @@ You will have to create 3 plots based on the datasets and instructions detailed 
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(tidytuesdayR)
+
+library(ggplot2)            # all tasks
+library(scales)             # needed for task 2
+library(RColorBrewer)       # needed for task 2
+library(ggrepel)            # trying something out in task 3
 ```
 
 ## Task 1: Climbing expeditions
@@ -30,8 +35,42 @@ The 2020-09-22 TidyTueday datasets are about climbing expeditions. From the thre
 -   The bars are ordered by the sum of all expeditions (use `fct_reorder()`).
 -   The bar colors use the viridis palette and light theme.
 
-```{r}
+**Solution:**
 
+Load the dataset `expeditions` from the provided online source:
+
+```{r}
+expeditions <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2020/2020-09-22/expeditions.csv")
+```
+
+Take a look at the dataset `expeditions`.
+
+```{r}
+glimpse(expeditions)
+```
+
+OK, let's continue with the actual plotting! **My logic for the task:**
+
+-   I first thought of just `count()` with sorting, and `slice(1:15)`. But that would require more steps, namely extracting 15 most frequent names in a separate vector, then filtering the main dataset by filter(name %in% top_15). Then I followed the instructions that hint to use `fct_lump()` = we lump 15 most frequent `peak_names` and lump others to `Other` and then `filter()` it out as we won't need other peaks.
+-   I planned to use `group_by(peak)`, count number of rows with `n()` and `ungroup()` before next steps, but after looking at the documentation online, I came across wonderful function `add_count()`! Then, it was easy to just use `fct_reorder()` on the whole/remaining dataset!
+-   As per example plot, it was straightforward to use `geom_bar()` with `season` as fill argument. Coordinates needed to be flipped, labels added, legend re-positioned and after looking at the online sources, I figured how to add the required color palette (viridis).
+
+```{r}
+expeditions %>%
+  mutate(peak = fct_lump(peak_name, 15)) %>%
+  filter(peak != "Other") %>%
+  #we could group_by peak and use n() to calculate total rows per peak, but this is neater
+  add_count(peak) %>%    
+  mutate(peak = fct_reorder(peak, n)) %>%
+  ggplot() + 
+  aes(peak, fill = season) +
+  geom_bar() + 
+  coord_flip() +
+  theme_light() + 
+  labs(x = NULL, y = "Number of expeditions", title = "The 15 most popular peaks by season of expedition") + 
+  theme(legend.position="bottom") + 
+     scale_fill_viridis_d()
+  
 ```
 
 ## Task 2: PhDs awarded
@@ -44,9 +83,46 @@ Notes:
 -   To make the x axis breaks pretty, use `scales::pretty_breaks()`, to make the y axis labels comma formatted, use `scales::comma_format()`.
 -   The line size is 1.2, the colors are from the brewer "Dark2" palette. The theme is set to minimal.
 
-```{r}
+**Solution:**
 
+Import the dataset from the provided source:
+
+```{r}
+phd_field <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-19/phd_by_field.csv")
 ```
+
+Take a look at the dataset `phd_field`:
+
+```{r}
+glimpse(phd_field)
+```
+
+OK, let's continue with the actual plotting! **My logic for the task:**
+
+-   Based on the instructions, I know that we need `broad_field`, `major_field` and `field` as factors. So, let's factorise and overwrite existing variables.
+-   *What data do I need?* Sum of all phds (`n_phds`) by `year` by `broad_field` (first 2 lines)
+-   *This summarised data is sufficient for the plot.* I need `year`on X axis, summarised `total_phds` on Y axis, geom_line() requires grouping aesthetic (`broad_field`) and we also assign the same (`broad_field`) to color aesthetic to get lines of different colors
+-   Search online how to assign `pretty_breaks()`, `comma_format()` and `scale_color_brewer()`
+-   Change the labels according to the provided example
+
+```{r}
+phd_field %>%
+  mutate(broad_field = factor(broad_field),
+         major_field = factor(major_field),
+         field = factor(field)) %>%
+  group_by(broad_field, year) %>%
+  summarise(total_phd = sum(n_phds, na.rm = TRUE)) %>%
+  ggplot() +
+  aes(x = year, y = total_phd, group = broad_field, color = broad_field) +
+  geom_line(size = 1.2) + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = pretty_breaks()) +    
+  scale_y_continuous(labels = comma_format()) + 
+  scale_color_brewer(palette = "Dark2") + 
+  labs(x = NULL, y = NULL, color = "Broad field", title = "Number of awarded Ph.D.-s in the US by year")
+  
+```
+
 
 ## Task 3: Commute in the US
 
@@ -58,6 +134,75 @@ Notes:
 -   Both axis scales are log transformed and the labels comma formatted, using `scales::comma_format()`
 -   The point size is 2, . The theme is set to light.
 
-```{r}
+**Solution:**
 
+Compared to previous 2 tasks, I divided this one into more steps. Could be done in one pipeline, but it might be a bit messy to read/follow. Edit: For practice I did everything in one step in the end, by far not as *bad* as I expected....actually very easy to follow :)
+
+
+Read the dataset from the online source:
+```{r}
+commute <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2019/2019-11-05/commute.csv")
 ```
+
+Take a look at the data:
+```{r}
+glimpse(commute)
+```
+
+Factorise specific variables:
+```{r}
+commute <- commute %>%
+  mutate(city = factor(city),
+         state = factor(state),
+         city_size = factor(city_size),
+         mode = factor(mode),
+         state_abb = factor(state_abb),
+         state_region = factor(state_region))
+```
+
+*What data do I need?* `state_abb` for point labeling, `state_region` for grouping (`fill`), sum of `Walk` and `Bike` for each state. 
+```{r}
+commute_sum <- commute %>%
+  group_by(state_region, state_abb, mode) %>%
+  summarise(total_number = sum(n))
+```
+
+Ok, getting there. But, we need to plot `Bike` vs. `Walk`, so we will need to `pivot_wider()` (good that we practiced pivoting in the previous assignment a bit).
+```{r}
+commute_wide <- pivot_wider(commute_sum, names_from = mode, values_from = total_number)
+```
+
+Now we can finally plot!
+```{r}
+commute_wide %>%
+  ggplot() + 
+  aes(x = Walk, y = Bike, color = state_region) + 
+  geom_point(size = 2) + 
+  geom_text_repel(aes(label = state_abb), color = "black", size = 3) + 
+  scale_x_log10(labels = label_comma()) + 
+  scale_y_log10(limits = c(80, 150000),labels = label_comma()) +
+  theme_light() + 
+  labs(x = "Number of ppl walking walking to work (log10)", y = "Number of ppl walking biking to work (log10)", color = "State region", title = "Number of people walking vs. biking to work in each USA state")
+```
+
+
+Ok for practice I want to see how all these steps would look in one pipeline:
+```{r}
+commute %>%
+  mutate(mode = factor(mode),
+         state_abb = factor(state_abb),
+         state_region = factor(state_region)) %>%
+  group_by(state_region, state_abb, mode) %>%
+  summarise(total_number = sum(n)) %>%
+  pivot_wider(names_from = mode, values_from = total_number) %>%
+  ggplot() + 
+  aes(x = Walk, y = Bike, color = state_region) + 
+  geom_point(size = 2) + 
+  geom_text_repel(aes(label = state_abb), color = "black", size = 3) + 
+  scale_x_log10(labels = label_comma()) + 
+  scale_y_log10(limits = c(80, 150000),labels = label_comma()) +
+  theme_light() + 
+  labs(x = "Number of ppl walking walking to work (log10)", y = "Number of ppl walking biking to work (log10)", color = "State region", title = "Number of people walking vs. biking to work in each USA state")
+  
+```
+Ok....not **that** bad actually, not bad at all.
