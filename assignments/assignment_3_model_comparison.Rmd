@@ -4,15 +4,19 @@ author: "Marton Kovacs"
 output: html_document
 editor_options: 
   chunk_output_type: console
+  markdown: 
+    wrap: sentence
 ---
 
-In this lab assignment you are going to work with (simulated) data related to perioperative pain and its psychological and hormonal predictors. In the assignment you will assess the added benefit of including some psychological and hormonal predictors to the already established demographic predictors of pain.
+In this lab assignment you are going to work with (simulated) data related to perioperative pain and its psychological and hormonal predictors.
+In the assignment you will assess the added benefit of including some psychological and hormonal predictors to the already established demographic predictors of pain.
 
-In this assignment you will set up a hierarchical regression model to predict postoperative pain after wisdom tooth surgery. 
+In this assignment you will set up a hierarchical regression model to predict postoperative pain after wisdom tooth surgery.
 
 # Research problem
 
-The amount of pain experienced around and after surgeries are highly variable between and within individuals. In order to improve surgical pain management regimens we need to understand what influences pain around surgical procedures and predict the amount of pain an individual will experience.
+The amount of pain experienced around and after surgeries are highly variable between and within individuals.
+In order to improve surgical pain management regimens we need to understand what influences pain around surgical procedures and predict the amount of pain an individual will experience.
 
 Your first study in this area is related to assessing the influence of trait and state psychological measures on pain, and to see whether taking into account these variables can improve our understanding of postoperative pain.
 
@@ -20,33 +24,60 @@ Your first study in this area is related to assessing the influence of trait and
 
 Use the data file called ‘assignment_3_dataset’, from the 'data/' folder.
 
-You have collected data from 160 adults who were scheduled to undergo surgical extraction of the third mandibular molar (wisdom tooth surgery). Patients filled out a form in the waiting room before their surgery. The form contained questions about their sex, age, and weight, and psychological questionnaires assessing anxiety, pain catastrophizing, and mindfulness (see descriptions below). You also got blood samples and saliva samples from participants in the waiting room 5 minutes before their operations to determine the serum (a component of the blood) and salivary cortisol levels of participants. Participants were contacted 5 hours after the surgery to see how much pain they were experiencing. The __level of pain__ at that moment was recorded using a numerical rating scale using a __scale of 0 to 10__, where 0 means “no pain” and 10 means “worst pain I can imagine”. 
+You have collected data from 160 adults who were scheduled to undergo surgical extraction of the third mandibular molar (wisdom tooth surgery).
+Patients filled out a form in the waiting room before their surgery.
+The form contained questions about their sex, age, and weight, and psychological questionnaires assessing anxiety, pain catastrophizing, and mindfulness (see descriptions below).
+You also got blood samples and saliva samples from participants in the waiting room 5 minutes before their operations to determine the serum (a component of the blood) and salivary cortisol levels of participants.
+Participants were contacted 5 hours after the surgery to see how much pain they were experiencing.
+The **level of pain** at that moment was recorded using a numerical rating scale using a **scale of 0 to 10**, where 0 means “no pain” and 10 means “worst pain I can imagine”.
 
-__The State Trait Anxiety Inventory:__ T measures trait anxiety on a scale of 20 to 80, higher scores mean higher anxiety. Anxiety has been found in many studies to positively correlate with the level of pain experienced. This is __variable STAI_trait__ in the dataset.
+**The State Trait Anxiety Inventory:** T measures trait anxiety on a scale of 20 to 80, higher scores mean higher anxiety.
+Anxiety has been found in many studies to positively correlate with the level of pain experienced.
+This is **variable STAI_trait** in the dataset.
 
-__The Pain Catastrophizing Scale__ measures the extent of pain catastrophizing, which is characterized by a tendency to magnify the threat value of a pain stimulus and to feel helpless in the presence of pain, as well as by a relative inability to prevent or inhibit pain-related thoughts in anticipation of, during, or following a painful event. The total score on this scale ranges from 0 to 52, higher scores mean higher catastrophizing. Pain catastrophizing is one of the well-established predictors of clinical pain. This is __variable pain_cat__ in the dataset.
+**The Pain Catastrophizing Scale** measures the extent of pain catastrophizing, which is characterized by a tendency to magnify the threat value of a pain stimulus and to feel helpless in the presence of pain, as well as by a relative inability to prevent or inhibit pain-related thoughts in anticipation of, during, or following a painful event.
+The total score on this scale ranges from 0 to 52, higher scores mean higher catastrophizing.
+Pain catastrophizing is one of the well-established predictors of clinical pain.
+This is **variable pain_cat** in the dataset.
 
-__The Mindful Attention Awareness Scale (MAAS)__ measures dispositional mindfulness, which may be described as a tendency to turn attention to present-moment experiences in an open, non-judgmental way. The MAAS total score ranges from 1 to 6 (an average of the item scores), with higher scores representing higher dispositional mindfulness. Trait mindfulness has been theorized to serve as a protective factor against pain, as the individual would be more objective about their pain experience and tend to associate less discomfort, despair, and hopelessness to the pain-related sensations. This is __variable mindfulness__ in the dataset.
+**The Mindful Attention Awareness Scale (MAAS)** measures dispositional mindfulness, which may be described as a tendency to turn attention to present-moment experiences in an open, non-judgmental way.
+The MAAS total score ranges from 1 to 6 (an average of the item scores), with higher scores representing higher dispositional mindfulness.
+Trait mindfulness has been theorized to serve as a protective factor against pain, as the individual would be more objective about their pain experience and tend to associate less discomfort, despair, and hopelessness to the pain-related sensations.
+This is **variable mindfulness** in the dataset.
 
-__Cortisol__ is a stress hormone associated with acute and chronic stress. Cortisol levels are thought to be positively associated with pain experience. Cortisol can be __measured from both blood and the saliva__, although, serum cortisol is often regarded in medical research as more reliably related to stress (serum is a component of the blood plasma). These are __variables cortisol_serum__, and __cortisol_saliva__ in the dataset.
+**Cortisol** is a stress hormone associated with acute and chronic stress.
+Cortisol levels are thought to be positively associated with pain experience.
+Cortisol can be **measured from both blood and the saliva**, although, serum cortisol is often regarded in medical research as more reliably related to stress (serum is a component of the blood plasma).
+These are **variables cortisol_serum**, and **cortisol_saliva** in the dataset.
 
 # Research question
 
-Previous studies and meta-analyses showed that age and sex are often predictors of pain (age is negatively associated with pain, while sex is a predictor more dependent on the type of the procedure). You would like to determine the extent to which taking into account psychological and hormonal variables aside from the already used demographic variables would improve our understanding of postoperative pain.
+Previous studies and meta-analyses showed that age and sex are often predictors of pain (age is negatively associated with pain, while sex is a predictor more dependent on the type of the procedure).
+You would like to determine the extent to which taking into account psychological and hormonal variables aside from the already used demographic variables would improve our understanding of postoperative pain.
 
-To answer this research question you will __need to compare two models__ (with a hierarchical regression). The __simpler model__ should contain __age and sex as predictors of pain__, while the __more complex model__ should contain the __predictors: age, sex, STAI, pain catastrophizing, mindfulness, and cortisol measures__. Notice that the predictors used in the simpler model are a subset of the predictors used in more complex model. __You will have to do model comparison to assess whether substantial new information was gained about pain in the more complex model compared to the simpler model.__  
+To answer this research question you will **need to compare two models** (with a hierarchical regression).
+The **simpler model** should contain **age and sex as predictors of pain**, while the **more complex model** should contain the **predictors: age, sex, STAI, pain catastrophizing, mindfulness, and cortisol measures**.
+Notice that the predictors used in the simpler model are a subset of the predictors used in more complex model.
+**You will have to do model comparison to assess whether substantial new information was gained about pain in the more complex model compared to the simpler model.**
 
 # What to report
 
-As usual, before you can interpret your model, you will need to run data and model diagnostics. First, check the variables included in the more complex model (age, sex, STAI, pain catastrophizing, mindfulness, and cortisol measures as predictors, and pain as an outcome) for __coding errors__, and the model itself for __influential outliers__ (for example using Cook’s distance). Furthermore, check the final model to see if the __assumptions of linear regression hold true__, that is, __normality__ (of the residuals), __linearity__ (of the relationship), __homogeneity of variance__ (also called homoscedasticity) and that there is no excess __multicollinearity__ (“uncorrelated predictors” in Navarro’s words). If you find anything amiss during these checks, make the appropriate decision or correction and report your findings and actions in your report. 
+As usual, before you can interpret your model, you will need to run data and model diagnostics.
+First, check the variables included in the more complex model (age, sex, STAI, pain catastrophizing, mindfulness, and cortisol measures as predictors, and pain as an outcome) for **coding errors**, and the model itself for **influential outliers** (for example using Cook’s distance).
+Furthermore, check the final model to see if the **assumptions of linear regression hold true**, that is, **normality** (of the residuals), **linearity** (of the relationship), **homogeneity of variance** (also called homoscedasticity) and that there is no excess **multicollinearity** (“uncorrelated predictors” in Navarro’s words).
+If you find anything amiss during these checks, make the appropriate decision or correction and report your findings and actions in your report.
 
-__Note:__ If you do any changes, such as exclude cases, or exclude predictors from the model, you will have to re-run the above checks for your final data and model.
+**Note:** If you do any changes, such as exclude cases, or exclude predictors from the model, you will have to re-run the above checks for your final data and model.
 
-Report the results of the simpler model and the more complex model. For both models you should report the model test statistics (adj.R2, F, df, and p value). Also, report the statistics describing the coefficients of the predictors in a table format (unstandardized regression coefficients and 95% confidence intervals, standardized regression coefficients (B and Beta values), and p values).
+Report the results of the simpler model and the more complex model.
+For both models you should report the model test statistics (adj.R2, F, df, and p value).
+Also, report the statistics describing the coefficients of the predictors in a table format (unstandardized regression coefficients and 95% confidence intervals, standardized regression coefficients (B and Beta values), and p values).
 
-Write up the regression equation of the more complex model in the form of 𝑌 = 𝑏0 + 𝑏1 ∗ X1 + 𝑏2 ∗ X2 +…+ bn * Xn, in which you use the actual regression coefficients of your models. (b0 stands for the intercept and b1, b2 … bn stand for the model coefficients for each of the predictors, and X1, X2, … Xn denote the predictors).
+Write up the regression equation of the more complex model in the form of 𝑌 = 𝑏0 + 𝑏1 ∗ X1 + 𝑏2 ∗ X2 +…+ bn \* Xn, in which you use the actual regression coefficients of your models.
+(b0 stands for the intercept and b1, b2 … bn stand for the model coefficients for each of the predictors, and X1, X2, … Xn denote the predictors).
 
-Compare the two models in terms of how much variance they explain of pain’s variability in the sample. Report Akaike information criterion (AIC) for both models and the F test statistic and p value of the likelihood ratio test comparing the two models.
+Compare the two models in terms of how much variance they explain of pain’s variability in the sample.
+Report Akaike information criterion (AIC) for both models and the F test statistic and p value of the likelihood ratio test comparing the two models.
 
 # What to discuss
 
@@ -54,138 +85,585 @@ In your discussion of the findings, briefly interpret the results of the above a
 
 # Solution
 
-## Read the data
-
-Read the dataset used in this assignment. Pay attention to the extension of the datafile.
+## 1. Load libraries
 
 ```{r}
-
+library(tidyverse)
+library(ggplot2)
+library(broom)
+library(readxl)
+library(performance)        # for check_*() functions
+library(skimr)              # for skim()
+library(psych)              # for describe()
+library(sjPlot)             # for plot_model() and tab_model()
+library(ggfortify)          # for autoplot()
 ```
 
-## Data and model diagnostics 
-### Data diagnostics
-#### Descriptives of the variables
+## 2. Read the data
+
+Read the dataset used in this assignment.
+Pay attention to the extension of the datafile.
+
+```{r}
+a3_df <- read_excel("/Users/Intragalactic/Documents/PhD ELTE/Year 1/Uni/2. Semester/Statistical programming/elte-ppk-r-course-Spring-2025/data/assignment_3_dataset.xlsx")
+```
+
+## 3. Data and model diagnostics
+
+### 3.1 Data diagnostics
+
+#### 3.1.1 Descriptives of the variables
 
 Run an exploratory data analysis (EDA) to investigate the dataset.
 
-```{r}
+Let's take a look at the data:
 
+```{r}
+glimpse(a3_df)
 ```
 
-#### Correct coding errors
+Let's factorise `sex` and `ID`.
+
+```{r}
+a3_df <- a3_df %>% mutate(across(c(ID, sex), ~factor(.)))
+```
+
+Let's create a basic summary of the data:
+
+```{r}
+summary(a3_df)
+```
+
+The first thing I notice is that we have 3 levels for `sex` = "female", "male" and "woman".
+Let's re-code "woman" to "female".
+
+```{r}
+a3_df <- a3_df %>%
+  mutate(sex = recode(sex,
+                      "woman" = "female"))
+```
+
+Ok, let's now check if there are any missing values in different variables/columns.
+
+```{r}
+colSums(is.na(a3_df))
+```
+
+No missing values in any of the variables!
+
+We continue with plotting of distributions for different variables.
+We facet them by `sex`, to get a basic insight whether `sex` influences variables of interest.
+
+```{r}
+predictors <- c("pain", "age", "STAI_trait", "pain_cat", "IQ", "household_income", "mindfulness", "cortisol_serum", "cortisol_saliva")
+
+for (var in predictors) {
+  print(
+    #use aes_string() because we have a vector of predictor names
+    ggplot(a3_df, aes_string(x = var)) +   
+      geom_histogram(bins = 20) +
+      facet_wrap ( ~ sex) +
+      theme_minimal() +
+      labs(title = paste("Distribution of", var))
+  )
+}
+```
+
+I want to check summaries of the data subsetting for `sex`.
+I use `skim()` from `skimr` package.
+I found it while searching for something on StackOverflow once and I find it useful for summaries based on grouping in dplyr pipeline.
+
+```{r}
+a3_df %>%
+  group_by(sex) %>%
+  skim()
+
+describe(a3_df)
+```
+
+
+**Based on this general inspection, there are some things to point out:**
+
+-   there seems to be a severe outlier in the female subset for `pain`. 
+    Considering the range of the data and the scale of the questionnaire (0-10), it seems that false score was recorded (outside of the questionnaire score range).
+-   After using `describe`, I noticed that there is maximum value of 6.22 in mindfulness variable, which is impossible, since score range is 1-6. This datapoint is an outlier that could occur due to various technical reasons (data-entry etc.)
+-   variables in general seem to be roughly normally distributed with slight skewness or kurtosis (used `describe()` from `psych` package to check the numerical values to complement the visual inspection)
+
+Let's now focus on `pain` variable:
+
+```{r}
+a3_df %>%
+  count(pain)
+```
+
+```{r}
+a3_df %>%
+  #filter(pain < 11) %>%
+  ggplot(aes(pain)) + 
+  geom_boxplot() + 
+  facet_wrap(~sex)
+```
+
+And `mindfulness`:
+```{r}
+a3_df %>%
+  count(mindfulness) %>%
+  arrange(desc(mindfulness))
+```
+
+Indeed there is a datapoint of value `50` which is impossible considering the range of the questionnaire (0-10). Same goes for value `6.22` in `mindfulness`, as score range is limited to 1-6.
+We have established, that these are incorrect datapoint as they are outside of possible range.
+We can only speculate whether this was a data entry error (for example entering 50 instead of 5), whether data was recorded falsely (though it is a questionnaire), some together.
+One option would be to recode the value to the max possible value, though this might be unsubstantiated based on various possible reasons for corrupt datapoint.
+I will create a filtered dataset without these participants.
+For exploration and practice, I will also construct the model on complete dataset including these 2 false datapoints.
+
+#### 3.1.2 Correct coding errors
 
 If you find values in the dataset during the EDA, that are not correct based on the provided descriptions of the variables of the dataset please correct them here.
 
-```{r}
+Clean dataset (removed `pain` and `mindfulness` outliers):
 
+```{r}
+a3_df_clean <- a3_df %>%
+  filter(pain < 11 & mindfulness <= 6)
+
+summary(a3_df_clean)
 ```
 
-### Model diagnostics
-#### Build the more complex model
+
+### 3.2 Model diagnostics
+
+#### 3.2.1 Build the more complex model
 
 In order to test the more complex model for outliers and to test the assumptions first build the model.
 
+while the **more complex model** should contain the **predictors: age, sex, STAI, pain catastrophizing, mindfulness, and cortisol measures**.
+Notice that the predictors used in the simpler model are a subset of the predictors used in more complex model.
+
+Constructing model **M1**.
+
 ```{r}
+pain_complex_mdl <- lm(pain ~ age + sex + STAI_trait + pain_cat + cortisol_serum + cortisol_saliva + mindfulness, data = a3_df_clean)
+
+# I also make a model with complete dataset to use it for model estimates comparison ~ to see how the corrupted datapoint affects the model
+pain_complex_mdl_raw <- lm(pain ~ age + sex + STAI_trait + pain_cat + cortisol_serum + cortisol_saliva + mindfulness, data = a3_df)
+```
+
+Let's take a look at the summary of model estimates:
+
+```{r}
+summary(pain_complex_mdl)
+```
+
+Quick look at the model estimates suggest that out of all predictor variables, `pain_cat` (pain catastrophising) is the only significant predictor (Estimate: 0.094, SE = 0.029, t = 3.24, p < 0.01), which is not a surprising results, given the that pain catastrophizing is one of the well-established predictors of clinical pain.
+Inspecting r squared, we see that the model explains approximately 35.1% of the variance in the outcome variable `pain`. After adjusting for the number of predictors, 32.1% of the variance remains accounted for, suggesting a moderate model fit.
+**However, any interpretation is premature unless the model assumptions are thoroughly checked and reasonably satisfied!!!**
+
+For comparison, I also ran the model on the unfiltered dataset including the `pain = 50` value.
+The model estimates differ substantially (e.g., r-squared now 0.085, adjusted r-squared now 0.043), indicating that this outlier had a strong distorting effect on the model estimates.
+
+```{r}
+summary(pain_complex_mdl_raw)
+```
+
+Let's just plot some basic plots using `sjPlot` package here to visualise the relationships in the model.
+
+```{r}
+plot_model(pain_complex_mdl, type = "est")  # unstandardised coefficient plot
+plot_model(pain_complex_mdl, type = "pred") # prediction plots for all predictors
+```
+
+#### 3.2.2 Checking for influential outliers
+
+I will use `autoplot()` and `plot()` functions here for visual inspection.
+I am also using `check_model()` function from `performance` package here.
+Documentation about the package available at: <https://easystats.github.io/see/articles/performance.html#introduction>
+
+**Check for outlier values in the model.** I plot Cook's Distance to visualize the influential points.
+Outliers and high leverage points were also identified by inspecting the Residuals vs Leverage plot.
+
+I am considering whether to rely on visual inspection or also "rule of thumb calculations".
+I think I should also include the second as I lack substantial experience with visual assessment only.
+I determine the Cook's distance influential points threshold using a rule of thumb: Cook's Distance \> 4/n.
+
+```{r}
+# Checking Residuals vs Leverage
+plot(pain_complex_mdl, which = 5)
+autoplot(pain_complex_mdl, 4:6)
+
+#plot only Cook's distances and threshold
+plot(pain_complex_mdl, 4)
+abline(h = 4/nrow(a3_df_clean), col = "red") 
+
+augment(pain_complex_mdl) %>%
+  mutate(over_thresh = .cooksd > 4/n()) %>%
+  count(over_thresh)
 
 ```
 
-#### Checking for influential outliers
+Threshold count and plotting suggest there are 12 influential points.
+At this point I decide to check other assumptions as well, but I am also planning to return to this and do the influential point identification and remove them from the dataset.
+I am still contemplating whether to follow the rules of thumb or will this lead to overfitting model if only filtered data is used for the next model.
 
-Check for outlier values in the model.
+#### 3.2.3 Checking assumptions
 
-```{r}
-
-```
-
-#### Checking assumptions
-
-Check the normality assumption.
+**Check the normality assumption.** Focusing on Q-Q plot.
+Residuals appear to be normally distributed with slight deviations.
 
 ```{r}
+autoplot(pain_complex_mdl, which = 1:3)
+check_model(pain_complex_mdl)
 
+#checking with test as well
+check_normality(pain_complex_mdl)
 ```
 
-Check the linearity assumption.
+**Check the linearity assumption.** Focusing on Residuals vs Fitted.
+A horizontal line, without distinct patterns is an indication for a linear relationship.
+There are slight deviations at the minimum extreme of fitted values (2).
 
 ```{r}
-
+autoplot(pain_complex_mdl, 1:3)
+plot(pain_complex_mdl, which = 5)
+check_model(pain_complex_mdl)
 ```
 
-Check the homoscedasticty assumption (homogeneity of variance).
+**Check the homoscedasticty assumption (homogeneity of variance).** There are slight deviations at the maximum extreme of fitted values (7).
 
 ```{r}
+check_model(pain_complex_mdl)
 
+#checking with test as well
+check_heteroscedasticity(pain_complex_mdl)
 ```
 
-Check the multicollinearity assumption.
+Ok so far we can confirm that based on visual inspection and tests, model's assumptions of normality, homogeneity of variance, and linearity appear to be met.
+Specifically, visual inspections and formal tests indicate that the residuals are approximately normally distributed and the variance is homogeneously spread across different values/levels of the predictors.
+While there are some deviations at the extreme values, I will check for multicollinearity before making any final decisions.
 
-(VIF above 5), or a VIF threshold of 3 is recommended in this paper: http://onlinelibrary.wiley.com/doi/10.1111/j.2041-210X.2009.00001.x/full
-
-Some info about VIF: 
-https://statisticalhorizons.com/multicollinearity
-http://blog.minitab.com/blog/understanding-statistics/handling-multicollinearity-in-regression-analysis
+I will plot separate associations between predictors and outcome variable with actual datapoints as scatterplot, to get another grasp of the data.
 
 ```{r}
-
+plot_model(pain_complex_mdl, type = "pred", show.data = TRUE)
 ```
 
-### Making decision based on model diagnostics
+**Check the multicollinearity assumption.** (VIF above 5), or a VIF threshold of 3 is recommended in this paper: <http://onlinelibrary.wiley.com/doi/10.1111/j.2041-210X.2009.00001.x/full>
 
-If based on the assumption tests you decide to drop a predictor variable you should do that here. Create your updated model.
+Some info about VIF: <https://statisticalhorizons.com/multicollinearity> <http://blog.minitab.com/blog/understanding-statistics/handling-multicollinearity-in-regression-analysis>
 
 ```{r}
-
+check_model(pain_complex_mdl)
+check_collinearity(pain_complex_mdl)
 ```
 
-#### Checking outliers of the updated model
+Based on the visualisation and formal test to calculate VIF we see that cortisol measures are moderately correlated (VIF for `cortisol_serum` = 6.02, `cortisol_saliva` = 6.59, both \> 5), indicating collinearity..
+
+### 3.3 Making decision based on model diagnostics and constructing new model (M2)
+
+*If based on the assumption tests you decide to drop a predictor variable you should do that here. Create your updated model.*
+
+I decide to drop one of the cortisol measures due to their moderate correlation, which could affect the model estimates in case both are included as predictors.
+Based on the information provided in the introduction and the context, I decide to keep `cortisol_serum`, as it is considered a more reliable stress measure.
+As stated above: *"serum cortisol is often regarded in medical research as more reliably related to stress (serum is a component of the blood plasma)"*.
+
+Constructing model **M2**.
 
 ```{r}
+pain_complex_serumcort_mdl <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = a3_df_clean)
 
+summary(pain_complex_serumcort_mdl)
 ```
 
-#### Checking assumptions of the updated model
+#### 3.3.1 Checking outliers of the updated model
 
-Normality assumption
+Based on the visual and rule-of-thumb-based assessment, there still seem to be some (9) influential datapoints according to the calculation, however visual inspection of Leverage vs. Std.
+Residuals plot from `check_model()` or `plot(which = 5)` suggests none.
 
 ```{r}
+# Checking Residuals vs Leverage
+plot(pain_complex_serumcort_mdl, which = 5)
+autoplot(pain_complex_serumcort_mdl, 4:6)
+check_model(pain_complex_serumcort_mdl)
 
+#plot only Cook's distances and threshold
+plot(pain_complex_serumcort_mdl, 4)
+abline(h = 4/nrow(a3_df_clean), col = "red") 
+
+augment(pain_complex_serumcort_mdl) %>%
+  arrange(desc(.cooksd)) %>%
+  mutate(over_thresh = .cooksd > 4/n()) %>%
+  count(over_thresh)
 ```
 
-Linearity assumption
+#### 3.3.2 Checking assumptions of the updated model
+
+**Normality assumption.** Residuals are normally distributed.
 
 ```{r}
+autoplot(pain_complex_serumcort_mdl, which = 1:3)
+check_model(pain_complex_serumcort_mdl)
+plot(pain_complex_serumcort_mdl, 3)
 
+
+#checking with test as well
+check_normality(pain_complex_serumcort_mdl)
 ```
 
-Homoscedasticty assumption (homogeneity of variance)
+**Linearity assumption.** Met based on visual inspection of Fitted vs. Residuals plot.
 
 ```{r}
-
+check_model(pain_complex_serumcort_mdl)
 ```
 
-Multicollinearity assumption
+**Homoscedasticty assumption (homogeneity of variance):** Visual inspection and test suggest that assumption of homoscedasticity is satisfied as reference line is flat and horizontal and residuals appear to be uniformly distributed around the reference lines, with a few exceptions at the upper extreme of fitted values.
 
 ```{r}
+check_model(pain_complex_serumcort_mdl)
 
+#checking with test as well
+check_heteroscedasticity(pain_complex_serumcort_mdl)
 ```
 
-## Model comparison
+**Multicollinearity assumption.** After removal of `cortisol_saliva`, there is no issues with multicollinearity anymore.
+
+```{r}
+check_model(pain_complex_serumcort_mdl)
+```
+
+### 3.4 Updated model - removing influential points (M3)
+
+I will check what happens if I remove previously identified influential datapoints from the dataset and focus on measure testing the assumptions.
+
+Removing influential datapoints from the dataset.
+
+```{r}
+influential_points <- augment(pain_complex_serumcort_mdl) %>%
+  mutate(row_id = 1:n()) %>%
+  mutate(over_thresh = .cooksd > 4/n()) %>%
+  filter(over_thresh == TRUE) %>%
+  pull(row_id)
+
+# Look at the influential data
+augment(pain_complex_serumcort_mdl) %>%
+  mutate(over_thresh = .cooksd > 4/n()) %>%
+  filter(over_thresh == TRUE)
+
+a3_df_clean_cd <- a3_df_clean %>%
+  slice(-influential_points)
+```
+
+Creating a new model **M3** on new dataset.
+
+```{r}
+pain_complex_serumcort_cd_mdl <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = a3_df_clean_cd)
+
+summary(pain_complex_serumcort_cd_mdl)
+```
+
+#### 3.4.1 Checking outliers of the updated model
+
+Based on the rule-of-thumb-based assessment, there still seem to be some (6) influential datapoints according to the calculation, however visual inspection suggest none really.
+I guess that rule-of-thumb method is a recursive process and some points will always get identified as influential.
+
+```{r}
+# Checking Residuals vs Leverage
+plot(pain_complex_serumcort_cd_mdl, which = 5)
+autoplot(pain_complex_serumcort_cd_mdl, 4:6)
+check_model(pain_complex_serumcort_cd_mdl)
+
+#plot only Cook's distances and threshold
+plot(pain_complex_serumcort_cd_mdl, 4)
+abline(h = 4/nrow(a3_df_clean_cd), col = "red") 
+
+augment(pain_complex_serumcort_cd_mdl) %>%
+  mutate(over_thresh = .cooksd > 4/n()) %>%
+  count(over_thresh)
+```
+
+#### 3.4.2 Checking assumptions of the updated mode
+
+**Normality assumption.** Residuals are normally distributed.
+
+```{r}
+autoplot(pain_complex_serumcort_cd_mdl, which = 1:3, ncol = 3)
+check_model(pain_complex_serumcort_cd_mdl)
+
+#checking with test as well
+check_normality(pain_complex_serumcort_cd_mdl)
+```
+
+**Linearity assumption.** Met based on visual inspection of Fitted vs. Residuals plot.
+
+```{r}
+check_model(pain_complex_serumcort_cd_mdl)
+```
+
+**Homoscedasticty assumption (homogeneity of variance).** Visual inspection and test suggest that assumption of homoscedasticity is met.
+
+```{r}
+check_model(pain_complex_serumcort_cd_mdl)
+
+#checking with test as well
+check_heteroscedasticity(pain_complex_serumcort_cd_mdl)
+```
+
+**Multicollinearity assumption.** After removal of `cortisol_saliva`, there is no issues with multicollinearity anymore.
+
+```{r}
+check_model(pain_complex_serumcort_cd_mdl)
+```
+
+Check both model summaries again.
+
+```{r}
+summary(pain_complex_serumcort_mdl)
+summary(pain_complex_serumcort_cd_mdl)
+```
+
+### 3.5 Intermediate summary
+
+I will summarise my thought process here:
+
+-   3 models were compared:
+
+-   M1: *clean data* and *all predictors*
+
+-   M2: *clean data* and *all predictors minus cortisol saliva*
+
+-   M3: *data with influential points removed* and *all predictors minus cortisol saliva*
+
+-   Based on multicolinearity assessment of the M1, we removed salivary cortisol measure due to moderate correlation with serum cortisol, which was kept, being a more reliable measure
+
+-   Based on visual inspection and tests for outliers, influential points, homoscedasticity, normality and linearity, I considered removing 9 datapoints from the M2, or more precisely, from the dataset used for constructing M2
+
+-   After removal of the points, I re-ran the model on the filtered dataset.
+    Repetition of tests and inspections listed in the previous point and taking nature of the data and context into account, I decided to not continue with the additionally cleaned dataset (influential points removed).
+    Relying on Cook's distance threshold calculation is a recursive process and could lead to spiral of data removal.
+    Additionally, comparing the tests for normality, linearity, homoscedasticity and multicollinearity revealed no significant improvements in meeting these assumptions.
+    They were met by M2 already.
+
+-   While removing the 9 influential observations improved some model metrics, notably increasing adjusted r-squared from 0.31 to 0.39 and reducing residual standard error from 1.25 to 1.12, I decided to retain the dataset `a3_df_clean`. Such data removal might artificially inflate r-squared. So in the final model we used the dataset from which only the 2 outliers identified as corrupt data (EDA section, 1 `pain` outlier and 1 `mindfulness`) was removed.
+
+-   I will use M2 as complex model in the final comparison with the basic, simple model
+
+## 4. Model comparison, reults and discussion
+
+### 4.1 Comparison
 
 Create the simple model and get the results of the model that needs to be reported based on the What to report section.
 
 ```{r}
-
+pain_simple_mdl <- lm(pain ~ age + sex, data = a3_df_clean)
+summary(pain_simple_mdl)
 ```
 
-Create the more complex model based on the results of the model diagnostics. Also, get the results that needs to be reported based on the What to report section.
+Create the more complex model based on the results of the model diagnostics.
+Also, get the results that needs to be reported based on the What to report section.
+
+Final complex model:
 
 ```{r}
-
+pain_complex_final_mdl <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = a3_df_clean)
+summary(pain_complex_final_mdl)
 ```
 
 Compare the two models.
 
 ```{r}
+#get AIC, BIC, R2, adj. R2, RMSE
+compare_performance(pain_simple_mdl, pain_complex_final_mdl)
 
+#Likelihood ratio test
+tidy(anova(pain_simple_mdl, pain_complex_final_mdl)) 
 ```
 
+Create model estimates table where both standardised and unstandardised coefficients are reported - using `tab_model()` from `sjPlot`, which I am used to from reporting linear mixed models results in our previous studies.
+
+```{r}
+tab_mdls <- tab_model(pain_simple_mdl, pain_complex_final_mdl,
+          show.std = TRUE,
+          show.est = TRUE,
+          show.stat = TRUE,
+          show.aic = TRUE,
+          show.dev = TRUE,
+          show.loglik = TRUE,
+          digits = 3,
+          title = "Table 1: Regression Models Predicting Post-operative Pain",
+          dv.labels = c("Simple model predicting post-operative pain",
+                        "Complex model predicting post-operative pain"),
+          pred.labels = c("(Intercept)", 
+                          "Age",
+                          "Sex",
+                          "STAI trait",
+                          "Pain catastrophizing",
+                          "Mindfulness",
+                          "Cortisol (serum)"))
+
+tab_mdls
+```
+
+### 4.2 Final report
+
+Before fitting the models, I inspected the data, coding of the variables, distributions etc.
+During this initial exploration, an outlier in the `pain` variable was identified: a participant had reported a value of 50, which is outside the valid range of the questionnaire (0-10). I also identified an outlied in `mindfulness` as a score of 6.22 was outside of possible 1-6 range.
+After closer examination, I determined that this was likely a data entry error or some form of incorrect recording, as they were implausible values for the questionnaires.
+Consequently, I removed these data points from the dataset before proceeding with the analysis.
+
+After the outliers were removed, I continued by additional inspecting of the distribution of variables and checking for any other potential issues.
+The data appeared to be roughly normally distributed with some slight skewness or kurtosis, as confirmed by both visual inspection (boxplots) and numerical summaries (using the `describe()` function from the `psych` package).
+
+Next, I moved on to the modelling process.
+Three models were compared:
+
+-   **M1**: Clean data with all predictors
+-   **M2**: Clean data with all predictors excluding cortisol saliva
+-   **M3**: Data with influential points removed and all predictors excluding cortisol saliva
+
+For M1, a multicollinearity check was performed, revealing moderate correlation between salivary cortisol and serum cortisol.
+As serum cortisol is considered a more reliable measure as per the theoretical introduction, I chose to exclude salivary cortisol from subsequent models (M2 and M3).
+
+After investigating M2 model estimates and assumption-check outcomes, I considered removing influential data points based on Cook's distance and other diagnostic tests.
+After removing nine influential points, I re-ran the model (M3) and conducted further tests for normality, linearity, homoscedasticity, and multicollinearity.
+Although removing influential points identified in M2 improved some model metrics (adjusted r-squared increased from 0.31 to 0.39, and residual standard error decreased from 1.25 to 1.12), I decided not to continue with this additional cleaning (reject M3).
+Removing data points in a recursive manner could potentially lead to a spiral of exclusions, and no significant improvements in meeting the regression assumptions were observed when compared to M2.
+Therefore, I chose to retain the dataset `a3_df_clean`, where only the outlier was removed.
+
+**Focusing on regression assumptions for M2:** The linearity assumption was visually assessed using scatterplots, and no apparent violations were detected.
+Homoscedasticity was checked through residual plots, which showed that residuals were randomly distributed across fitted values, indicating no major issues with variance.
+This was complemented by formal test (`check_heteroscedasticity()`; Breusch-Pagan test).
+Normality of residuals was assessed using Q-Q plots, which showed a fairly normal distribution of residuals, suggesting that the assumption of normality was reasonably met.
+Multicollinearity was evaluated using the variance inflation factor (VIF), and the highest VIFs were below 5, indicating no severe issues with collinearity.
+
+Finally, I compared the simple model and the final complex model (M2) using several metrics.
+The simple model, with age and sex as predictors, explained a modest amount of variance in pain.
+The adjusted r-squared was 0.069, suggesting that about 7% of the variance in pain was explained by these predictors.
+The F-statistic for this model was 6.78 (df = 2, 155), with a p-value of 0.001508.
+The more complex model, which included additional predictors (STAI trait anxiety, pain catastrophizing, mindfulness, and serum cortisol), explained a larger proportion of the variance in pain.
+The adjusted r-squared for this model was 0.312, indicating that approximately 31% of the variance in pain was explained.
+The F-statistic for this model was 12.58 (df = 6, 151), with a p-value of \< 0.001.
+
+Model comparison is partially reported in Table 1 (r-squared, adjusted r-squared, deviance, AIC and log-Likelihood), while the results of the Likelihood Ratio Test (LRT) are reported here.
+The AIC for the simple model was 572.5, while the AIC for the complex model (M2) was 528.5.
+A lower AIC indicates a better fit (especially difference higher than 8), suggesting that M2 fits the data more effectively than M1.
+The likelihood ratio test comparing the two models yielded a statistically significant result (chi\^2(4) = 14.7, p \< .001), which further supports the better fit of the complex model (M2).
+
+The coefficients for both models are reported in Table 1, which includes unstandardized regression coefficients, standardized regression coefficients, 95% confidence intervals, and p-values.
+**Note:** in both models sex was dummy-coded as 0 for female and 1 for male.
+
+```{r}
+tab_mdls
+```
+
+Formula for the regression is:
+
+```{r, eval = FALSE}
+Pain = 1.945 - 0.034 * Age + 0.316 * Sex - 0.013 * STAI_trait + 0.083 * Pain_Cat - 0.136 * Mindfulness + 0.543 * Cortisol_Serum
+```
+
+### 4.3 Discussion
+
+In summary, the complex model demonstrated a significantly better fit than the simple model, as evidenced by the lower AIC, the higher adjusted r-squared, and the significant likelihood ratio test. In this model, pain catastrophizing (p = .004) and cortisol (p \< .001) were found to be significant predictors of post-operative pain, indicating that individuals with higher levels of catastrophizing and cortisol reported higher pain scores.
+Other predictors, including age, sex, trait anxiety, and mindfulness, did not reach statistical significance in the final model.
+
+The inclusion of additional predictors such as pain catastrophizing and serum cortisol led to a better understanding of the variability in pain, as these two emerged as key significant predictors. Overall, these findings suggest that incorporating psychological and biological measures does improve the explanatory power of the model beyond demographic variables alone.
